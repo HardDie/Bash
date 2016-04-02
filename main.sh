@@ -6,6 +6,13 @@ echo -n "Введите директорию в которой создават�
 
 read mainDir
 
+if [ -d $mainDir ]; then
+	:
+else
+	echo "Такой директории не существует!"
+	exit 1
+fi
+
 echo -n "Введите количество папок на первом уровне: "
 read firstLevel
 echo -n "Введите их имя: "
@@ -21,44 +28,39 @@ read thirdLevel
 echo -n "Введите их имя: "
 read nameThird
 
-if [ -d $mainDir ]; then
-	cd $mainDir
-	i=0	#Инициализация переменной цикла
-	while [ $i -lt $firstLevel  ]; do
+cd $mainDir
+i=0	#Инициализация переменной цикла
+while [ $i -lt $firstLevel  ]; do
 
-		mkdir "$nameFirst$i"
+	mkdir "$nameFirst$i"
+	if [ $? -eq 1 ]; then
+		echo "Не удалось создать папку \"folder$i\" в директории \"$PWD\""
+		exit 1
+	fi
+	cd "$nameFirst$i"
+	j=0	#Инициализация переменной цикла
+	while [ $j -lt $secondLevel ]; do
+
+		mkdir "$nameSecond$j"
 		if [ $? -eq 1 ]; then
-			echo "Не удалось создать папку \"folder$i\" в директории \"$PWD\""
+			echo "Не удалось создать папку \"folder$i$j\" в директории \"$PWD\""
 			exit 1
 		fi
-		cd "$nameFirst$i"
-		j=0	#Инициализация переменной цикла
-		while [ $j -lt $secondLevel ]; do
+		cd "$nameSecond$j"
+		k=0	#Инициализация переменной цикла
+		while [ $k -lt $thirdLevel ]; do
 
-			mkdir "$nameSecond$j"
-			if [ $? -eq 1 ]; then
-				echo "Не удалось создать папку \"folder$i$j\" в директории \"$PWD\""
-				exit 1
-			fi
-			cd "$nameSecond$j"
-			k=0	#Инициализация переменной цикла
-			while [ $k -lt $thirdLevel ]; do
-
-				touch "$nameThird$k"
-				k=$(($k + 1))
-
-			done
-			cd ..
-			j=$(($j + 1))
+			touch "$nameThird$k"
+			k=$(($k + 1))
 
 		done
 		cd ..
-		i=$(($i + 1))
+		j=$(($j + 1))
 
 	done
-else
-	echo "Такой директории не существует!"
-	exit 1
-fi
+	cd ..
+	i=$(($i + 1))
+
+done
 
 exit 0
