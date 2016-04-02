@@ -1,0 +1,2 @@
+default :
+	rm -rf ./gg/*
