@@ -1,2 +1,2 @@
 default :
-	rm -rf ./gg/*
+	rm -rf ./gg/* folder*

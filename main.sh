@@ -2,15 +2,12 @@
 
 echo "			Bash лабораторная №1, создание папок"
 echo
-echo -n "Введите директорию в которой создавать папки: "
 
-read mainDir
 firstLevel=5
 secondLevel=10
 thirdLevel=20
 
 if [ -d $mainDir ]; then
-	cd $mainDir
 	i=0	#Инициализация переменной цикла
 	while [ $i -lt $firstLevel  ]; do
 
