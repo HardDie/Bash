@@ -9,10 +9,6 @@ firstLevel=5
 secondLevel=10
 thirdLevel=20
 
-
-
-k=0
-
 if [ -d $mainDir ]; then
 	cd $mainDir
 	i=0	#Инициализация переменной цикла
