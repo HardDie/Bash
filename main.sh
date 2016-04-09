@@ -65,6 +65,9 @@ addAlarm() {
 
 showAlarm() {
 	echo "--------------------[Показать список будильников]--------------------"
+	hi=$(crontab -l | awk -F# '/#alarm/ {print $1}' | awk -F* '{print $1, $4}')
+	echo "$hi"
+
 	return 0
 }
 
