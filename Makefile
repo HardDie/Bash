@@ -1,2 +1,2 @@
 default :
-	rm -rf ./gg/*
+	crontab ./gg/cron_backup
