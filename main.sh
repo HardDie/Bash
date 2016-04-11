@@ -5,6 +5,7 @@ menu() {
 	echo "1 - Добавить будильник"
 	echo "2 - Посмотреть список будильников"
 	echo "3 - Удалить будильник"
+	echo "4 - Выход"
 	echo
 	echo -n "Выберите пункт меню: "
 
@@ -18,6 +19,8 @@ menu() {
 				pointMenu=2;;
 			3)
 				pointMenu=3;;
+			4)
+				pointMenu=4;;
 			*)
 				echo -n "Неверный ввоод, повторите попытку: "
 				pointMenu=0;;
@@ -65,9 +68,10 @@ addAlarm() {
 
 showAlarm() {
 	echo "--------------------[Показать список будильников]--------------------"
-	hi=$(crontab -l | awk -F# '/#alarm/ {print $1}' | awk -F* '{print $1, $4}')
-	echo "$hi"
-
+	#hi=$(crontab -l | awk -F# '/#alarm/ {print $1}' | awk -F* '{print $1, $4}')
+	alarms=$(crontab -l | awk -F# ' /#alarm/ { print $1 } ' | awk -F"'" '{ print $1, " |", $2 }' |  awk ' { gsub("export DISPLAY=:0 && xterm -e dialog --msgbox","",$0); gsub("*","",$0); gsub("  ","",$0); printf "%2d %s %s|%s\n", NR, $2, $1, $0 } ' | awk -F"|" '{ print $1, $3 }')
+	echo | awk ' {print "==============================="; print " №  H  M  Message"; print "===============================";} '
+	echo "$alarms"
 	return 0
 }
 
@@ -77,20 +81,28 @@ deleteAlarm() {
 }
 
 clear
+clear
+clear
 echo "			Bash лабораторная №3, Будильник с crontab"
 echo
 
-menu
-case "$?" in
-	1)
-		addAlarm
-		;;
-	2)
-		showAlarm
-		;;
-	3)
-		deleteAlarm
-		;;
-esac
+isDone=0
+while [[ $isDone -ne 1 ]]; do
+	menu
+	case "$?" in
+		1)
+			addAlarm
+			;;
+		2)
+			showAlarm
+			;;
+		3)
+			deleteAlarm
+			;;
+		4)
+			isDone=1
+			;;
+	esac
+done
 
 exit 0
