@@ -1,5 +1,9 @@
 #!/bin/bash
 
+alarmCount() {
+	return `crontab -l | grep \#alarm | wc -l`
+}
+
 menu() {
 	echo "--------------------[Главное меню]--------------------"
 	echo "1 - Добавить будильник"
@@ -60,15 +64,15 @@ addAlarm() {
 	echo -n "Введите текст сообщения: "
 	read message
 
-	crontab -l > .tmp.$$
-	echo "$minute $hour * * * export DISPLAY=:0 && xterm -e "dialog --msgbox \'$message\' 234 234" #alarm" >> .tmp.$$
-	crontab .tmp.$$
-	rm .tmp.$$
+	tmp_val=$$
+	crontab -l > .tmp.$tmp_val
+	echo "$minute $hour * * * export DISPLAY=:0 && xterm -e "dialog --msgbox \'$message\' 234 234" #alarm" >> .tmp.$tmp_val
+	crontab .tmp.$tmp_val
+	rm .tmp.$tmp_val
 }
 
 showAlarm() {
 	echo "--------------------[Показать список будильников]--------------------"
-	#hi=$(crontab -l | awk -F# '/#alarm/ {print $1}' | awk -F* '{print $1, $4}')
 	alarms=$(crontab -l | awk -F# ' /#alarm/ { print $1 } ' | awk -F"'" '{ print $1, " |", $2 }' |  awk ' { gsub("export DISPLAY=:0 && xterm -e dialog --msgbox","",$0); gsub("*","",$0); gsub("  ","",$0); printf "%2d %s %s|%s\n", NR, $2, $1, $0 } ' | awk -F"|" '{ print $1, $3 }')
 	echo | awk ' {print "==============================="; print " №  H  M  Message"; print "===============================";} '
 	echo "$alarms"
@@ -77,6 +81,30 @@ showAlarm() {
 
 deleteAlarm() {
 	echo "--------------------[Удалить будильник]--------------------"
+	alarmCount	# Вызываем функция для подсчета текущего количества будильников
+	cntAlarm=$?
+	if [ $cntAlarm -eq 0 ]; then
+		echo "Нет будильников"
+		return -1
+	fi
+	echo -n "Введите номер будильника: "
+	input 1 $cntAlarm	# Считываем номер удаляемого будильника, от 1 до количества будильников
+	numberAlarm=$?	# Сохраняем номер удаляемого будильника
+	temp=$$
+	touch .temp.$temp
+	crontab -l > .temp.$temp
+	tmp=`cat .temp.$temp | grep alarm -n | awk -F: '{ print $1 }'`
+	j=1
+	for i in $tmp
+	do
+		if [ $j -eq $numberAlarm ]; then
+			strNum=$i
+		fi
+		j=$(($j+1))
+	done
+	sed -i "${strNum}d" .temp.$temp
+	crontab .temp.$temp
+	rm .temp.$temp
 	return 0
 }
 
