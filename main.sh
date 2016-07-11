@@ -83,7 +83,7 @@ DeleteProcess() {
 	ProcessList;
 	echo "--------------------[Delete process control]--------------------";
 	echo;
-	echo -n "Choose process for delete: ";
+	echo -n "Choose process for delete(0 back): ";
 	processCount=`crontab -l | grep \#process_control | wc -l`;
 	if [[ $processCount -eq 0 ]]; then
 		clear;
@@ -92,8 +92,11 @@ DeleteProcess() {
 		read;
 		return 0;
 	fi
-	Input 1 $processCount;
+	Input 0 $processCount;
 	processForDelete=$?;
+	if [[ $processForDelete -eq 0 ]]; then
+		return 0;
+	fi
 	processList=`crontab -l | grep \#process_control -n | awk -F: '{ print $1 }'`;
 	tmp_val=$$;
 	touch .tmp.$tmp_val;
@@ -118,10 +121,8 @@ ProcessList() {
 }
 
 if [[ $# -eq 1 ]]; then
-	echo "Hello" >> /home/harddie/bash_project/Bash/tmp;
 	if [ `ps -ax | grep $1 | grep -v grep | grep -v main.sh | wc -l` -eq 0 ]; then
-		echo "Dude: $1" >> /home/harddie/bash_project/Bash/tmp;
-		DISPLAY:=0 $1;
+		DISPLAY=:0.0 $1;
 	fi
 else
 	isDone=0;
