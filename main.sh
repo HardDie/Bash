@@ -77,7 +77,7 @@ CheckTime() {
 	return 0;
 }
 
-InputTime() {
+InputDate() {
 	result=1;
 	while [[ $result -eq 1 ]]
 	do
@@ -100,10 +100,46 @@ InputTime() {
 ShowLog() {
 	echo -n "Input program name: ";
 	read program;
-	InputTime;
+	#InputDate;
+	timeStart=`date --date="$timeStart" +"%s"`;
+	timeEnd=`date --date="$timeEnd" +"%s"`;
 
 	cd /var/log
-	
+	if [[ -f $program.log ]]; then
+		temp=`cat $program.log | wc -l`;
+		i=1;
+		while [[ $i -ne $temp ]]
+		do
+			str=`sed -ne "$i"p $program.log`;
+			tmp=`echo $str | awk '{ print $3 }'`;
+			date=`date --date="$tmp" +"%s"`;
+			if [[ $date -ge $timeStart && $date -le $timeEnd ]]; then
+				echo "$str";
+			fi
+			i=$(($i+1));
+		done
+	elif [[ -d $program ]]; then
+		echo "Directory";
+		cd $program;
+		for i in `ls`
+		do
+			temp=`cat $i | wc -l`;
+			j=1;
+			while [[ $j -ne $temp ]]
+			do
+				str=`sed -ne "$j"p $i`;
+				tmp=`echo $str | awk '{ print $3 }'`;
+				date=`date --date="$tmp" +"%s"`;
+				if [[ $date -ge $timeStart && $date -le $timeEnd ]]; then
+					echo "$str";
+				fi
+				j=$(($j+1));
+			done
+		done
+	else
+		echo "Syslog"
+	fi
+	read;
 }
 
 isDone=0;
