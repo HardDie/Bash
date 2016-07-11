@@ -53,7 +53,7 @@ AddProcess() {
 			tmp_val=$$;
 			touch .tmp.$tmp_val;
 			crontab -l > .tmp.$tmp_val;
-			echo "*/$per * * * * /home/hard_die/school/linux/4_process_control/main.sh $process #process_control" >> .tmp.$tmp_val;
+			echo "*/$per * * * * /home/harddie/bash_project/Bash/main.sh $process #process_control" >> .tmp.$tmp_val;
 			crontab .tmp.$tmp_val;
 			rm .tmp.$tmp_val;
 			;;
@@ -66,7 +66,7 @@ AddProcess() {
 			tmp_val=$$;
 			touch .tmp.$tmp_val;
 			crontab -l > .tmp.$tmp_val;
-			echo "0 */$per * * * /home/hard_die/school/linux/4_process_control/main.sh $process #process_control" >> .tmp.$tmp_val;
+			echo "0 */$per * * * /home/harddie/bash_project/Bash/main.sh $process #process_control" >> .tmp.$tmp_val;
 			crontab .tmp.$tmp_val;
 			rm .tmp.$tmp_val;
 			;;
@@ -118,9 +118,10 @@ ProcessList() {
 }
 
 if [[ $# -eq 1 ]]; then
-	echo "Hello" >> /home/hard_die/school/linux/4_process_control/tmp;
-	if [ `ps -ax | grep $1 | wc -l` -eq 1 ]; then
-		echo "Hello" >> /home/hard_die/school/linux/4_process_control/tmp;
+	echo "Hello" >> /home/harddie/bash_project/Bash/tmp;
+	if [ `ps -ax | grep $1 | grep -v grep | grep -v main.sh | wc -l` -eq 0 ]; then
+		echo "Dude: $1" >> /home/harddie/bash_project/Bash/tmp;
+		DISPLAY:=0 $1;
 	fi
 else
 	isDone=0;
