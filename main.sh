@@ -100,45 +100,72 @@ InputDate() {
 ShowLog() {
 	echo -n "Input program name: ";
 	read program;
-	#InputDate;
+	InputDate;
 	timeStart=`date --date="$timeStart" +"%s"`;
 	timeEnd=`date --date="$timeEnd" +"%s"`;
 
 	cd /var/log
 	if [[ -f $program.log ]]; then
+		echo "$program.log";
 		temp=`cat $program.log | wc -l`;
-		i=1;
-		while [[ $i -ne $temp ]]
+		j=0;
+		while [[ $j -lt $temp ]]
 		do
-			str=`sed -ne "$i"p $program.log`;
-			tmp=`echo $str | awk '{ print $3 }'`;
+			j=$(($j+1));
+			str=`sed -ne "$j"p $program.log`;
+			tmp=`echo $str | egrep -o "[0-2][0-9]:[0-9][0-9]:[0-9][0-9] "`;
 			date=`date --date="$tmp" +"%s"`;
 			if [[ $date -ge $timeStart && $date -le $timeEnd ]]; then
 				echo "$str";
 			fi
-			i=$(($i+1));
 		done
 	elif [[ -d $program ]]; then
 		echo "Directory";
 		cd $program;
 		for i in `ls`
 		do
+			echo;
+			echo "file: $i";
+			echo;
 			temp=`cat $i | wc -l`;
-			j=1;
-			while [[ $j -ne $temp ]]
+			j=0;
+			while [[ $j -lt $temp ]]
 			do
+				j=$(($j+1));
 				str=`sed -ne "$j"p $i`;
-				tmp=`echo $str | awk '{ print $3 }'`;
+				tmp=`echo $str | egrep -o "[0-2][0-9]:[0-9][0-9]:[0-9][0-9] "`;
 				date=`date --date="$tmp" +"%s"`;
 				if [[ $date -ge $timeStart && $date -le $timeEnd ]]; then
 					echo "$str";
 				fi
-				j=$(($j+1));
 			done
 		done
 	else
 		echo "Syslog"
+		for i in `ls | grep syslog | grep -v gz`
+		do
+			echo;
+			echo "file: $i";
+			echo;
+			temp=`cat $i | wc -l`;
+			j=0;
+			while [[ $j -lt $temp ]]
+			do
+				j=$(($j+1));
+				str=`sed -ne "$j"p $i`;
+				check=`echo $str | grep $program`;
+				if [[ -n $check ]]; then
+					tmp=`echo $str | egrep -o "[0-2][0-9]:[0-9][0-9]:[0-9][0-9] "`;
+					date=`date --date="$tmp" +"%s"`;
+					if [[ $date -ge $timeStart && $date -le $timeEnd ]]; then
+						echo "$str";
+					fi
+				fi
+			done
+		done
 	fi
+	#cat error_log | egrep -o "[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ";
+	echo "End, press any key...";
 	read;
 }
 
