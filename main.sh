@@ -10,6 +10,8 @@ if [[ $# -eq 1 ]]; then
 		temp=`df -h | grep "^192.168.1.2:/home/shared.*/media/server" | wc -l`;
 		if [[ $temp -eq 0 ]]; then
 			sudo mount 192.168.1.2:/home/shared /media/server;
+		else
+			exit;
 		fi
 
 		temp=`df -h | grep "^192.168.1.2:/home/shared.*/media/server" | wc -l`;
@@ -18,8 +20,7 @@ if [[ $# -eq 1 ]]; then
 			exit;
 		fi
 
-		cd /media/server;
-		log="main.sh.log";
+		log="/media/server/main.sh.log";
 		ip=`ifconfig eth0 | grep "inet addr:" | awk '{ print $2 }' | awk -F: '{ print $2 }'`;
 
 		echo >> $log;
@@ -37,8 +38,7 @@ if [[ $# -eq 1 ]]; then
 	elif [[ $1 = "stop" ]]; then
 		temp=`df -h | grep "^192.168.1.2:/home/shared.*/media/server" | wc -l`;
 		if [[ $temp -ne 0 ]]; then
-			cd /media/server;
-			log="main.sh.log";
+			log="/media/server/main.sh.log";
 			ip=`ifconfig eth0 | grep "inet addr:" | awk '{ print $2 }' | awk -F: '{ print $2 }'`;
 			echo >> $log;
 			echo "[STOP]" >> $log;
