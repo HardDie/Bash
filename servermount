@@ -1,0 +1,94 @@
+#! /bin/bash
+
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+	temp=`df -h | grep "^192.168.1.2:/home/shared.*/media/server" | wc -l`;
+	if [[ $temp -eq 0 ]]; then
+		sudo mount 192.168.1.2:/home/shared /media/server;
+	else
+		return 1;
+	fi
+
+	temp=`df -h | grep "^192.168.1.2:/home/shared.*/media/server" | wc -l`;
+	if [[ $temp -eq 0 ]]; then
+		return 2;
+	fi
+
+	log="/media/server/main.sh.log";
+	ip=`ifconfig eth0 | grep "inet addr:" | awk '{ print $2 }' | awk -F: '{ print $2 }'`;
+
+	echo >> $log;
+	echo "[START]" >> $log;
+	echo "Name: `whoami`" >> $log;
+	echo "IP: $ip" >> $log;
+	echo "Start: `date -R`" >> $log;
+	echo >> $log;
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+	temp=`df -h | grep "^192.168.1.2:/home/shared.*/media/server" | wc -l`;
+	if [[ $temp -ne 0 ]]; then
+		log="/media/server/main.sh.log";
+		ip=`ifconfig eth0 | grep "inet addr:" | awk '{ print $2 }' | awk -F: '{ print $2 }'`;
+		echo >> $log;
+		echo "[STOP]" >> $log;
+		echo "Name: `whoami`" >> $log;
+		echo "IP: $ip" >> $log;
+		echo "Stop: `date -R`" >> $log;
+		echo "Uptime: `uptime -p`" >> $log;
+		echo >> $log;
+		sudo umount -l /media/server;
+	else
+		return 1;
+	fi
+}
+
+case "$1" in
+	start)
+		do_start;
+		case "$?" in
+			1)
+				echo "Server already mount";
+				;;
+			2)
+				echo "Error mount server";
+				;;
+		esac
+		;;
+	stop)
+		do_stop;
+		case "$?" in
+			1)
+				echo "Server already unmount";
+				;;
+		esac
+		;;
+	status)
+		temp=`df -h | grep "^192.168.1.2:/home/shared.*/media/server" | wc -l`;
+		if [[ $temp -ne 0 ]]; then
+			echo "Server folder mount";
+		else
+			echo "Server folder not mount";
+		fi
+		;;
+	restart|force-reload)
+		do_stop;
+		temp=1;
+		while [[ $temp -ne 0 ]]; do
+			temp=`df -h | grep "^192.168.1.2:/home/shared.*/media/server" | wc -l`;
+			sleep 3;
+		done
+		do_start;
+		;;
+	*)
+		echo "Usage: servermount {start|stop|status|restart|force-reload}" >&2
+		exit 3
+		;;
+esac
