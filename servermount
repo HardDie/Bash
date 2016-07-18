@@ -50,23 +50,29 @@ do_stop()
 	fi
 }
 
+logfile="/var/log/servermount.log";
+echo >> $logfile;
+echo "`$date` servermount start" >> $logfile;
+
 case "$1" in
 	start)
+		echo "start mount" >> $logfile;
 		do_start;
 		case "$?" in
 			1)
-				echo "Server already mount";
+				echo "Server already mount" >> $logfile;
 				;;
 			2)
-				echo "Error mount server";
+				echo "Error mount server" >> $logfile;
 				;;
 		esac
 		;;
 	stop)
+		echo "start unmount" >> $logfile;
 		do_stop;
 		case "$?" in
 			1)
-				echo "Server already unmount";
+				echo "Server already unmount" >> $logfile;
 				;;
 		esac
 		;;
