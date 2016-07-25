@@ -39,61 +39,88 @@ Menu() {
 }
 
 SetSource() {
-	clear;
-	echo -n "Set source path: ";
-	read srcPath;
+	if [[ $# -eq 1 && $1 = "human" ]]; then
+		clear;
+		echo -n "Set source path: ";
+		read srcPath;
+	fi
+
 	if [[ !( -d $srcPath ) && !( -f $srcPath ) && !( -b $srcPath ) ]]; then
-		echo "Error. Wrong source path.";
 		srcPath="None";
-		read;
-		return 0;
+		if [[ $# -eq 1 && $1 = "human" ]]; then
+			echo "Error. Wrong source path.";
+			read;
+		fi
+		return 1;
+	fi
+
+	if [[ !(-r $srcPath) ]]; then
+		srcPath="None";
+		if [[ $# -eq 1 && $1 = "human" ]]; then
+			echo "Soucer file permission denied.";
+			read;
+		fi
+		return 1;
 	fi
 
 	endChar=`echo $srcPath | awk -F'/' '{ printf"%s\n", substr($0,length,1) }'`;
 	if [[ !($endChar = '/') && (-d $srcPath) ]]; then
 		srcPath="$srcPath/";
 	fi
+	return 0;
 }
 
 SetDestination() {
-	clear;
-	echo -n "Set destination path: ";
-	read dstPath;
+	if [[ $# -eq 1 && $1 = "human" ]]; then
+		clear;
+		echo -n "Set destination path: ";
+		read dstPath;
+	fi
+
 	if [[ !( -e $dstPath ) ]]; then
-		echo "Error. Wrong destination path.";
 		dstPath="None";
-		read;
-		return 0;
+		if [[ $# -eq 1 && $1 = "human" ]]; then
+			echo "Error. Wrong destination path.";
+			read;
+		fi
+		return 1;
 	elif [[ !( -d $dstPath ) ]]; then
-		echo "Error. Destination path should be a folder.";
 		dstPath="None";
-		read;
-		return 0;
+		if [[ $# -eq 1 && $1 = "human" ]]; then
+			echo "Error. Destination path should be a folder.";
+			read;
+		fi
+		return 1;
+	fi
+
+	if [[ !(-w $dstPath) ]]; then
+		dstPath="None";
+		if [[ $# -eq 1 && $1 = "human" ]]; then
+			echo "Destination file permission denied.";
+			read;
+		fi
+		return 1;
 	fi
 
 	endChar=`echo $dstPath | awk -F'/' '{ printf"%s\n", substr($0,length,1) }'`;
 	if [[ !($endChar = '/') ]]; then
 		dstPath="$dstPath/";
 	fi
+	return 0;
 }
 
 Backup() {
-	clear;
-	echo "Backup...";
-	if [[ $srcPath = "None" || $dstPath = "None" ]]; then
-		echo "Error. Setup source and destination path not set.";
-		read;
-		return 0;
+	if [[ $# -eq 1 && $1 = "human" ]]; then
+		clear;
+		echo "Backup...";
 	fi
 
-	if [[ !(-r $srcPath) ]]; then
-		echo "Soucer file permission denied.";
-		read;
-		return 0;
-	elif [[ !(-w $dstPath) ]]; then
-		echo "Destination file permission denied.";
-		read;
-		return 0;
+	if [[ $srcPath = "None" || $dstPath = "None" ]]; then
+		if [[ $# -eq 1 && $1 = "human" ]]; then
+			echo "Error. Setup source and destination path not set.";
+			read;
+		fi
+		return 1;
 	fi
 
 	#
@@ -119,37 +146,57 @@ Backup() {
 	#	Block device
 	#
 	elif [[ -b $srcPath ]]; then
-		echo "Source block device: $srcPath";
 		archName=`echo $srcPath | awk -F'/' '{ print $NF }'`;
-		echo "Archive path: $dstPath$archName.img";
 		`dd status=none if=$srcPath of=$dstPath$archName.img`;
-
-	else
-		echo "Error. Wrong source path";
 	fi
 
-	echo "Backup end, press any key...";
-	read;
+	if [[ $# -eq 1 && $1 = "human" ]]; then
+		echo "Backup end, press any key...";
+		read;
+	fi
+	return 0;
 }
 
-isDone=0;
-while [[ $isDone -ne 1 ]]; do
-	Menu;
-	case "$?" in
-		1)
-			SetSource;
-			;;
-		2)
-			SetDestination;
-			;;
-		3)
-			Backup;
-			;;
-		4)
-			isDone=1
-			clear;
-			;;
-	esac
-done
+if [[ $# -eq 1 ]]; then
+	echo "Git";
+elif [[ $# -eq 2 ]]; then
+	echo "Backup";
+	srcPath=$1;
+	dstPath=$2;
 
+	SetSource;
+	if [[ $? -ne 0 ]]; then
+		echo "Wrong source";
+	fi
+
+	SetDestination;
+	if [[ $? -ne 0 ]]; then
+		echo "Wrong destination";
+	fi
+
+	Backup;
+	if [[ $? -ne 0 ]]; then
+		echo "Error backup";
+	fi
+else
+	isDone=0;
+	while [[ $isDone -ne 1 ]]; do
+		Menu;
+		case "$?" in
+			1)
+				SetSource human;
+				;;
+			2)
+				SetDestination human;
+				;;
+			3)
+				Backup human;
+				;;
+			4)
+				isDone=1
+				clear;
+				;;
+		esac
+	done
+fi
 exit 0
