@@ -1,7 +1,7 @@
 #!/bin/bash
 
-source="None";
-destination="None";
+srcPath="None";
+dstPath="None";
 
 Input() {
 	temp=-1;
@@ -25,8 +25,8 @@ Menu() {
 	clear;
 	echo "		Lab 8. Backup";
 	echo;
-	echo "Source: $source";
-	echo "Destination: $destination";
+	echo "Source: $srcPath";
+	echo "Destination: $dstPath";
 	echo;
 	echo "1. Set source";
 	echo "2. Set destination";
@@ -36,6 +36,36 @@ Menu() {
 	echo -n "Choose point menu: ";
 	Input 1 4;
 	return $?;
+}
+
+SetSource() {
+	clear;
+	echo -n "Set source path: ";
+	read srcPath;
+	if [[ !( -d $srcPath ) && !( -f $srcPath ) ]]; then
+		echo "Error. Wrong source path.";
+		srcPath="None";
+		read;
+		return 0;
+	fi
+}
+
+SetDestination() {
+	clear;
+	echo -n "Set destination path: ";
+	read dstPath;
+	if [[ -f $dstPath ]]; then
+		echo "Error. Destination path should be a folder.";
+		dstPath="None";
+		read;
+		return 0;
+	fi
+	if [[ !( -d $dstPath ) ]]; then
+		echo "Error. Wrong destination path.";
+		dstPath="None";
+		read;
+		return 0;
+	fi
 }
 
 Backup() {
