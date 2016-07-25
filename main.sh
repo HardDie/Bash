@@ -80,8 +80,18 @@ SetDestination() {
 Backup() {
 	clear;
 	echo "Backup...";
-	if [[ $source = "None" || $destination = "None" ]]; then
+	if [[ $srcPath = "None" || $dstPath = "None" ]]; then
 		echo "Error. Setup source and destination path not set.";
+		read;
+		return 0;
+	fi
+
+	if [[ !(-r $srcPath) ]]; then
+		echo "Soucer file permission denied.";
+		read;
+		return 0;
+	elif [[ !(-w $dstPath) ]]; then
+		echo "Destination file permission denied.";
 		read;
 		return 0;
 	fi
@@ -111,12 +121,13 @@ Backup() {
 	elif [[ -b $srcPath ]]; then
 		echo "Source block device: $srcPath";
 		archName=`echo $srcPath | awk -F'/' '{ print $NF }'`;
-		echo "Archive path: $dstPath$archName.tar.gz";
+		echo "Archive path: $dstPath$archName.img";
+		`dd status=none if=$srcPath of=$dstPath$archName.img`;
 
 	else
 		echo "Error. Wrong source path";
 	fi
-	
+
 	echo "Backup end, press any key...";
 	read;
 }
