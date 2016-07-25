@@ -119,7 +119,7 @@ Backup() {
 
 	if [[ $srcPath = "None" || $dstPath = "None" ]]; then
 		if [[ $# -eq 1 && $1 = "human" ]]; then
-			echo "Error. Setup source and destination path not set.";
+			echo "Error. Source and destination path not set.";
 			read;
 		fi
 		return 1;
@@ -173,29 +173,44 @@ Git() {
 	#
 	if [[ -f $srcPath ]]; then
 		dir=`echo $srcPath | awk -F'/' '{print substr($0,0,length-length($NF)+1)}'`;
-
+		cd $dir;
+		checkGit=`ls -al $dir | grep .git`;
+		if [[ -z $checkGit ]]; then
+			git init > /dev/null 2>&1;
+		fi
+		fileName=`echo $srcPath | awk -F'/' '{ print $NF }'`;
+		git add $fileName > /dev/null 2>&1;
+		git commit -m "`date`" > /dev/null 2>&1;
 
 	#
 	#	Folder
 	#
 	elif [[ -d $srcPath ]]; then
-		endChar=`echo $srcPath | awk -F'/' '{ printf"%s\n", substr($0,length,1) }'`;
-		if [[ $endChar = '/' ]]; then
-			archName=`echo $srcPath | awk -F'/' '{ print $(NF-1) }'`;
-		else
-			archName=`echo $srcPath | awk -F'/' '{ print $NF }'`;
+		dir=`echo $srcPath`;
+		cd $dir;
+		checkGit=`ls -al $dir | grep .git`;
+		if [[ -z $checkGit ]]; then
+			git init > /dev/null 2>&1;
 		fi
-
-	#
-	#	Block device
-	#
-	elif [[ -b $srcPath ]]; then
-		archName=`echo $srcPath | awk -F'/' '{ print $NF }'`;
+		git add . > /dev/null 2>&1;
+		git commit -m "`date`" > /dev/null 2>&1;
+	fi
+	if [[ $# -eq 1 && $1 = "human" ]]; then
+		echo "Commit was created";
+		read;
 	fi
 }
 
 if [[ $# -eq 1 ]]; then		# Git
-	echo "Git";
+	srcPath=$1;
+	SetSource;
+	if [[ $? -ne 0 ]]; then
+		return 1;
+	fi
+	Git;
+	if [[ $? -ne 0 ]]; then
+		return 1;
+	fi
 elif [[ $# -eq 2 ]]; then	# Backup
 	srcPath=$1;
 	dstPath=$2;
@@ -224,6 +239,9 @@ else						# Human
 				;;
 			3)
 				Backup human;
+				;;
+			4)
+				Git human;
 				;;
 			6)
 				isDone=1
