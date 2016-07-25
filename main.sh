@@ -31,10 +31,12 @@ Menu() {
 	echo "1. Set source";
 	echo "2. Set destination";
 	echo "3. Backup";
-	echo "4. Exit";
+	echo "4. Git";
+	echo "5. Add backup in crontab";
+	echo "6. Exit";
 	echo;
 	echo -n "Choose point menu: ";
-	Input 1 4;
+	Input 1 6;
 	return $?;
 }
 
@@ -134,12 +136,7 @@ Backup() {
 	#	Folder
 	#
 	elif [[ -d $srcPath ]]; then
-		endChar=`echo $srcPath | awk -F'/' '{ printf"%s\n", substr($0,length,1) }'`;
-		if [[ $endChar = '/' ]]; then
-			archName=`echo $srcPath | awk -F'/' '{ print $(NF-1) }'`;
-		else
-			archName=`echo $srcPath | awk -F'/' '{ print $NF }'`;
-		fi
+		archName=`echo $srcPath | awk -F'/' '{ print $(NF-1) }'`;
 		`tar -P -czf $dstPath$archName.tar.gz $srcPath`;
 
 	#
@@ -157,28 +154,64 @@ Backup() {
 	return 0;
 }
 
-if [[ $# -eq 1 ]]; then
+Git() {
+	if [[ $# -eq 1 && $1 = "human" ]]; then
+		clear;
+		echo "Git...";
+	fi
+
+	if [[ $srcPath = "None" ]]; then
+		if [[ $# -eq 1 && $1 = "human" ]]; then
+			echo "Error. Setup source and destination path not set.";
+			read;
+		fi
+		return 1;
+	fi
+
+	#
+	#	File
+	#
+	if [[ -f $srcPath ]]; then
+		dir=`echo $srcPath | awk -F'/' '{print substr($0,0,length-length($NF)+1)}'`;
+
+
+	#
+	#	Folder
+	#
+	elif [[ -d $srcPath ]]; then
+		endChar=`echo $srcPath | awk -F'/' '{ printf"%s\n", substr($0,length,1) }'`;
+		if [[ $endChar = '/' ]]; then
+			archName=`echo $srcPath | awk -F'/' '{ print $(NF-1) }'`;
+		else
+			archName=`echo $srcPath | awk -F'/' '{ print $NF }'`;
+		fi
+
+	#
+	#	Block device
+	#
+	elif [[ -b $srcPath ]]; then
+		archName=`echo $srcPath | awk -F'/' '{ print $NF }'`;
+	fi
+}
+
+if [[ $# -eq 1 ]]; then		# Git
 	echo "Git";
-elif [[ $# -eq 2 ]]; then
-	echo "Backup";
+elif [[ $# -eq 2 ]]; then	# Backup
 	srcPath=$1;
 	dstPath=$2;
-
 	SetSource;
 	if [[ $? -ne 0 ]]; then
-		echo "Wrong source";
+		return 1;
 	fi
-
 	SetDestination;
 	if [[ $? -ne 0 ]]; then
-		echo "Wrong destination";
+		return 1;
 	fi
-
 	Backup;
 	if [[ $? -ne 0 ]]; then
-		echo "Error backup";
+		return 1;
 	fi
-else
+else						# Human
 	isDone=0;
 	while [[ $isDone -ne 1 ]]; do
 		Menu;
@@ -192,7 +225,7 @@ else
 			3)
 				Backup human;
 				;;
-			4)
+			6)
 				isDone=1
 				clear;
 				;;
