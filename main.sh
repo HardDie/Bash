@@ -201,6 +201,31 @@ Git() {
 	fi
 }
 
+AddInCrontab() {
+	clear;
+	echo "Add new job in crontab";
+	echo "1. Add git";
+	echo "2. Add backup";
+	echo;
+	echo -n "Choose point menu: ";
+	Input 1 2;
+	return $?;
+}
+
+AddGit() {
+	if [[ !( -d $srcPath ) && !( -f $srcPath ) ]]; then
+		echo "Error. Source not available for git";
+		read;
+		return 1;
+	fi
+	tmpVal=$$;
+	crontab -l;
+}
+
+AddBackup() {
+
+}
+
 if [[ $# -eq 1 ]]; then		# Git
 	srcPath=$1;
 	SetSource;
@@ -242,6 +267,17 @@ else						# Human
 				;;
 			4)
 				Git human;
+				;;
+			5)
+				AddInCrontab;
+				case "$?" in
+					1)
+						AddGit;
+						;;
+					2)
+						AddBackup;
+						;;
+				esac
 				;;
 			6)
 				isDone=1
