@@ -213,17 +213,83 @@ AddInCrontab() {
 }
 
 AddGit() {
+	clear;
+	echo "Add git";
+
+	if [[ $srcPath = "None" ]]; then
+		echo "Error. Source path not set.";
+		read;
+		return 1;
+	fi
+
 	if [[ !( -d $srcPath ) && !( -f $srcPath ) ]]; then
 		echo "Error. Source not available for git";
 		read;
 		return 1;
 	fi
+
+	echo "1. Minutes";
+	echo "2. Hours";
+	echo;
+	echo -n "Choose pereodicity: ";
+	Input 1 2;
+	answer=$?;
+
 	tmpVal=$$;
-	crontab -l;
+	tmpPath=`pwd`/.tmp.$tmpVal;
+	`crontab -l > $tmpPath`;
+
+	case "$answer" in
+		1)
+			echo -n "Repeat every ... minutes: ";
+			Input 1 30;
+			echo "*/$? * * * * `pwd`/`basename "$0"` $srcPath #gitBackup" >> $tmpPath;
+			;;
+		2)
+			echo -n "Repeat every ... hours: ";
+			Input 1 12;
+			echo "0 */$? * * * `pwd`/`basename "$0"` $srcPath #gitBackup" >> $tmpPath;
+			;;
+	esac
+	crontab $tmpPath;
+	`rm $tmpPath`;
 }
 
 AddBackup() {
+	clear;
+	echo "Add backup";
 
+	if [[ $srcPath = "None" || $dstPath = "None" ]]; then
+		echo "Error. Source and destination path not set.";
+		read;
+		return 1;
+	fi
+
+	echo "1. Minutes";
+	echo "2. Hours";
+	echo;
+	echo -n "Choose pereodicity: ";
+	Input 1 2;
+	answer=$?;
+
+	tmpVal=$$;
+	tmpPath=`pwd`/.tmp.$tmpVal;
+	`crontab -l > $tmpPath`;
+
+	case "$answer" in
+		1)
+			echo -n "Repeat every ... minutes: ";
+			Input 1 30;
+			echo "*/$? * * * * `pwd`/`basename "$0"` $srcPath $dstPath #Backup" >> $tmpPath;
+			;;
+		2)
+			echo -n "Repeat every ... hours: ";
+			Input 1 12;
+			echo "0 */$? * * * `pwd`/`basename "$0"` $srcPath $dstPath #Backup" >> $tmpPath;
+			;;
+	esac
+	crontab $tmpPath;
+	`rm $tmpPath`;
 }
 
 if [[ $# -eq 1 ]]; then		# Git
