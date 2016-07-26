@@ -341,19 +341,19 @@ ShowJobs() {
 		clear;
 		echo "Backup";
 		echo;
-		crontab -l | grep -n '#Backup' | awk '{ print NR") Src:"$7"; Dst:"$8 }';
+		crontab -l | grep '#Backup' | awk '{ print NR") Src:"$7"; Dst:"$8"; Hour:"$2"; Min:"$1 }';
 
 		echo;
 		echo "Git";
 		echo;
-		crontab -l | grep -n '#gitBackup' | awk '{ print NR") Src:"$7 }';
+		crontab -l | grep '#gitBackup' | awk '{ print NR") Src:"$7"; Hour:"$2"; Min:"$1 }';
 
 		echo -n "Press any key...";
 		read;
 	elif [[ $# -eq 1 && $1 = "Backup" ]]; then
-		crontab -l | grep -n '#Backup' | awk '{ print NR") Src:"$7"; Dst:"$8 }';
+		crontab -l | grep '#Backup' | awk '{ print NR") Src:"$7"; Dst:"$8"; Hour:"$2"; Min:"$1 }';
 	elif [[ $# -eq 1 && $1 = "Git" ]]; then
-		crontab -l | grep -n '#gitBackup' | awk '{ print NR") Src:"$7 }';
+		crontab -l | grep '#gitBackup' | awk '{ print NR") Src:"$7"; Hour:"$2"; Min:"$1 }';
 	fi
 	return 0;
 }
