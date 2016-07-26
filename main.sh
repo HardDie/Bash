@@ -32,7 +32,7 @@ Menu() {
 	echo "2. Set destination";
 	echo "3. Backup";
 	echo "4. Git";
-	echo "5. Add backup in crontab";
+	echo "5. Work with crontab";
 	echo "6. Exit";
 	echo;
 	echo -n "Choose point menu: ";
@@ -201,6 +201,50 @@ Git() {
 	fi
 }
 
+CrontabMenu() {
+	clear;
+	echo "Work with crontab";
+	echo;
+	echo "1. Add";
+	echo "2. Show";
+	echo "3. Delete";
+	echo "4. Back";
+	echo;
+	echo -n "Choose point menu: ";
+	Input 1 4;
+	return $?;
+}
+
+CrontabCycle() {
+isCronDone=0;
+	while [[ $isCronDone -ne 1 ]]; do
+		CrontabMenu;
+		case "$?" in
+			1)
+				AddInCrontab;
+				case "$?" in
+					1)
+						AddGit;
+						;;
+					2)
+						AddBackup;
+						;;
+				esac
+				;;
+			2)
+				ShowJobs;
+				;;
+			3)
+				DeleteJobs;
+				;;
+			4)
+				isCronDone=1
+				;;
+		esac
+	done
+	return 0;
+}
+
 AddInCrontab() {
 	clear;
 	echo "Add new job in crontab";
@@ -292,6 +336,96 @@ AddBackup() {
 	`rm $tmpPath`;
 }
 
+ShowJobs() {
+	if [[ $# -eq 0 ]]; then
+		clear;
+		echo "Backup";
+		echo;
+		crontab -l | grep -n '#Backup' | awk '{ print NR") Src:"$7"; Dst:"$8 }';
+
+		echo;
+		echo "Git";
+		echo;
+		crontab -l | grep -n '#gitBackup' | awk '{ print NR") Src:"$7 }';
+
+		echo -n "Press any key...";
+		read;
+	elif [[ $# -eq 1 && $1 = "Backup" ]]; then
+		crontab -l | grep -n '#Backup' | awk '{ print NR") Src:"$7"; Dst:"$8 }';
+	elif [[ $# -eq 1 && $1 = "Git" ]]; then
+		crontab -l | grep -n '#gitBackup' | awk '{ print NR") Src:"$7 }';
+	fi
+	return 0;
+}
+
+DeleteJobs() {
+	clear;
+	echo "Delete job";
+	echo "1. Git";
+	echo "2. Crontab";
+	echo;
+	echo -n "Choose point menu: ";
+	Input 1 2;
+	case "$?" in
+		1)
+			clear;
+			echo "Delete git from crontab";
+			echo;
+			ShowJobs Git;
+			echo;
+			echo -n "Choose point for delete(0 - exit): ";
+			Input 0 `crontab -l | grep -c '#gitBackup'`;
+			point=$?;
+			if [[ $point -eq 0 ]]; then
+				return 1;
+			fi
+
+			tmpVal=$$;
+			tmpPath=`pwd`/.tmp.$tmpVal;
+			`crontab -l > $tmpPath`;
+
+			counter=1;
+			for i in `crontab -l | grep -n '#gitBackup' | awk -F':' '{ print $1 }'`
+			do
+				if [[ $counter -eq $point ]]; then
+					sed "${i}d" $tmpPath -i;
+					break;
+				fi
+				counter=$(($counter+1));
+			done
+			;;
+		2)
+			clear;
+			echo "Delete backup from crontab";
+			echo;
+			ShowJobs Backup;
+			echo;
+			echo -n "Choose point for delete(0 - exit): ";
+			Input 0 `crontab -l | grep -c '#Backup'`;
+			point=$?;
+			if [[ $point -eq 0 ]]; then
+				return 1;
+			fi
+
+			tmpVal=$$;
+			tmpPath=`pwd`/.tmp.$tmpVal;
+			`crontab -l > $tmpPath`;
+
+			counter=1;
+			for i in `crontab -l | grep -n '#Backup' | awk -F':' '{ print $1 }'`
+			do
+				if [[ $counter -eq $point ]]; then
+					sed "${i}d" $tmpPath -i;
+					break;
+				fi
+				counter=$(($counter+1));
+			done
+			;;
+	esac
+	crontab $tmpPath;
+	`rm $tmpPath`;
+}
+
 if [[ $# -eq 1 ]]; then		# Git
 	srcPath=$1;
 	SetSource;
@@ -335,15 +469,7 @@ else						# Human
 				Git human;
 				;;
 			5)
-				AddInCrontab;
-				case "$?" in
-					1)
-						AddGit;
-						;;
-					2)
-						AddBackup;
-						;;
-				esac
+				CrontabCycle;
 				;;
 			6)
 				isDone=1
