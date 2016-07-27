@@ -219,6 +219,47 @@ DecToBin() {
 Calculate() {
 	clear;
 	echo "Calculate";
+	if [[ $ip = "None" || $mask = "None" ]]; then
+		echo "Mask or IP not set";
+		read;
+		return 1;
+	fi
+
+	#
+	# Получаем адресс подсети
+	#
+	DecToBin $mask;		# Переводим маску в двоичный код
+	for (( i=1; i < 33; i++ ))
+	do
+		tmpmas[$i]=${mas[$i]};
+	done
+
+	DecToBin $ip;		# Переводим IP в двоичный код
+
+	for (( i=1; i < 33; i++ ))	# Делаем побитовое умножение маски и IP
+	do
+		if [[ ${tmpmas[$i]} -eq 0 || ${mas[$i]} -eq 0 ]]; then
+			mas[$i]=0;
+		else
+			mas[$i]=1;
+		fi
+	done
+	BinToDec;
+	echo "Network   : $address";
+
+	#
+	# Получаем broadcast
+	#
+	DecToBin $ip;		# Переводим IP в двоичный код
+	for (( i=1; i < 33; i++ ))
+	do
+		if [[ ${tmpmas[$i]} -eq 0 ]]; then
+			mas[$i]=1;
+		fi
+	done
+	BinToDec;
+	echo "Broadcast : $address";
+
 	read;
 }
 
