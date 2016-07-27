@@ -48,6 +48,7 @@ SetIp() {
 	if [[ $? -ne 0 ]]; then
 		echo "Wrong ip address";
 		ip="None";
+		echo -n "Press any key to continue...";
 		read;
 	fi
 }
@@ -97,6 +98,7 @@ SetMask() {
 	if [[ $res -eq 1 ]]; then
 		echo "Wrong mask";
 		mask="None";
+		echo -n "Press any key to continue...";
 		read;
 	elif [[ $res -eq 2 ]]; then
 		for (( i=1; i <= 32; i++ ))
@@ -225,6 +227,9 @@ Calculate() {
 		return 1;
 	fi
 
+	echo "IP        : $ip";
+	echo "Mask      : $mask";
+
 	#
 	# Получаем адресс подсети
 	#
@@ -247,6 +252,10 @@ Calculate() {
 	BinToDec;
 	echo "Network   : $address";
 
+	mas[32]=1;	# Вычисляем минимального хоста
+	BinToDec;
+	minHost=$address;
+
 	#
 	# Получаем broadcast
 	#
@@ -260,6 +269,15 @@ Calculate() {
 	BinToDec;
 	echo "Broadcast : $address";
 
+	#
+	# Получаем минимального и максимального хоста
+	#
+	echo "Min host  : $minHost";
+	mas[32]=0;	# Вычисляем максимаьлного хоста
+	BinToDec;
+	echo "Max host  : $address";
+
+	echo -n "Press any key to continue...";
 	read;
 }
 
