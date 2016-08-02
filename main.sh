@@ -8,11 +8,12 @@ Menu() {
 	echo "2 - Show swap";
 	echo "3 - Show CPU";
 	echo "4 - Show load average";
-	echo "5 - Exit";
+	echo "5 - Process info";
+	echo "6 - Exit";
 	echo
 	echo -n "Choose point menu: "
 
-	Input 1 5
+	Input 1 6
 	return "$?"
 }
 
@@ -90,8 +91,81 @@ ShowCpu() {
 	clear;
 	echo "Show cpu";
 	echo;
-	echo "User CPU time : ";
-	top -n1
+
+	str=`top -n1 | grep "%Cpu(s)"`;
+
+	echo -n "User CPU time       : ";
+	echo $str | awk '{ print $2 }';
+
+	echo -n "System CPU time     : ";
+	echo $str | awk '{ print $4 }';
+
+	echo -n "Nice CPU time       : ";
+	echo $str | awk '{ print $6 }';
+
+	echo -n "Idle CPU time       : ";
+	echo $str | awk '{ print $8 }';
+
+	echo -n "Iowait              : ";
+	echo $str | awk '{ print $10 }';
+
+	echo -n "Hardware IRQ        : ";
+	echo $str | awk '{ print $12 }';
+
+	echo -n "Software Interrupts : ";
+	echo $str | awk '{ print $14 }';
+
+	echo -n "Steal Time          : ";
+	echo $str | awk '{ print $16 }';
+
+	echo -n "Press any key...";
+	read;
+}
+
+ShowLoadAverage() {
+	clear;
+	echo "Show load average";
+	echo;
+
+	str=`top -n1 | grep "load average"`;
+
+	echo -n "Average 1 minute  : ";
+	echo $str | awk '{ print $10 }' | egrep -o '[0-9],[0-9][0-9]';
+
+	echo -n "Average 5 minute  : ";
+	echo $str | awk '{ print $11 }' | egrep -o '[0-9],[0-9][0-9]';
+
+	echo -n "Average 15 minute : ";
+	echo $str | awk '{ print $12 }';
+
+	echo -n "Press any key...";
+	read;
+}
+
+ShowProcessInfo() {
+	clear;
+	echo "Show process info";
+	echo;
+
+	str=`top -n1 | grep "Tasks"`;
+
+	echo -n "Total    : ";
+	echo $str | awk '{ print $2 }';
+
+	echo -n "Running  : ";
+	echo $str | awk '{ print $4 }';
+
+	echo -n "Sleeping : ";
+	echo $str | awk '{ print $6 }';
+
+	echo -n "Stopped  : ";
+	echo $str | awk '{ print $8 }';
+
+	echo -n "Zombie   : ";
+	echo $str | awk '{ print $10 }';
+
+	echo -n "Press any key...";
+	read;
 }
 
 isDone=0
@@ -105,9 +179,15 @@ while [[ $isDone -ne 1 ]]; do
 			ShowSwap;
 			;;
 		3)
-
+			ShowCpu;
+			;;
+		4)
+			ShowLoadAverage;
 			;;
 		5)
+			ShowProcessInfo;
+			;;
+		6)
 			isDone=1
 			clear;
 			;;
