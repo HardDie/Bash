@@ -38,18 +38,21 @@ ShowMemory() {
 	clear;
 	echo "Show memory";
 	echo;
+
+	str=`top -n1 | grep "KiB Mem"`;
+
 	echo -n "Total : ";
-	tmp=`top -n1 -b | grep "KiB Mem" | awk '{ print $3 }'`;
+	tmp=`echo $str | awk '{ print $4 }'`;
 	tmp=$(($tmp/1024));
 	echo "$tmp"M;
 
 	echo -n "Used  : ";
-	tmp=`top -n1 -b | grep "KiB Mem" | awk '{ print $5 }'`;
+	tmp=`echo $str | awk '{ print $6 }'`;
 	tmp=$(($tmp/1024));
 	echo "$tmp"M;
 
 	echo -n "Free  : ";
-	tmp=`top -n1 -b | grep "KiB Mem" | awk '{ print $7 }'`;
+	tmp=`echo $str | awk '{ print $8 }'`;
 	tmp=$(($tmp/1024));
 	echo "$tmp"M;
 
@@ -61,23 +64,34 @@ ShowSwap() {
 	clear;
 	echo "Show swap";
 	echo;
+
+	str=`top -n1 | grep "KiB Swap"`;
+
 	echo -n "Total : ";
-	tmp=`top -n1 -b | grep "KiB Swap" | awk '{ print $3 }'`;
+	tmp=`echo $str | awk '{ print $3 }'`;
 	tmp=$(($tmp/1024));
 	echo "$tmp"M;
 
 	echo -n "Used  : ";
-	tmp=`top -n1 -b | grep "KiB Swap" | awk '{ print $5 }'`;
+	tmp=`echo $str | awk '{ print $5 }'`;
 	tmp=$(($tmp/1024));
 	echo "$tmp"M;
 
 	echo -n "Free  : ";
-	tmp=`top -n1 -b | grep "KiB Swap" | awk '{ print $7 }'`;
+	tmp=`echo $str | awk '{ print $7 }'`;
 	tmp=$(($tmp/1024));
 	echo "$tmp"M;
 
 	echo -n "Press any key...";
 	read;
+}
+
+ShowCpu() {
+	clear;
+	echo "Show cpu";
+	echo;
+	echo "User CPU time : ";
+	top -n1
 }
 
 isDone=0
