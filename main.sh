@@ -1,36 +1,103 @@
 #!/bin/bash
 
-clear;
-echo "		Lab 7. Firewall";
-echo;
-
-if [[ !( $USER = root ) ]]; then
-	echo "Permision denied, run as root";
-	read;
+Menu() {
 	clear;
-	exit 0;
-fi
+	echo "		Lab 10. Htop";
+	echo;
+	echo "1 - Show memory";
+	echo "2 - Show swap";
+	echo "3 - Show CPU";
+	echo "4 - Show load average";
+	echo "5 - Exit";
+	echo
+	echo -n "Choose point menu: "
 
-# Очищаем iptables, добавляем в разрешения loopback и уже созданные соединения
-iptables -F;
-iptables -A INPUT -i lo -j ACCEPT;
-iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT;
+	Input 1 5
+	return "$?"
+}
 
-masConfig=(`cat config`);
-len=`cat config | wc -l`;
+Input() {
+	temp=-1
+	while [[ $temp -eq -1 ]]; do
+		read temp
+		case "$temp" in
+			[0-9] | [0-9][0-9])
+				if [[ $temp -lt $1 || $temp -gt $2 ]]; then
+					echo -n "Wrong input, try again: "
+					temp=-1
+				fi;;
+			*)
+				echo -n "Wrong input, try again: "
+				temp=-1;;
+		esac
+	done
+	return "$temp"
+}
 
-for (( i = 0; i < len; i++ ))
-do
-	packageInstall=`dpkg -l | grep ${masConfig[$(($i * 2))]} | wc -l`;
-	port=`echo ${masConfig[$(($i * 2 + 1))]} | egrep '^[0-9]{1,5}$'`;
-	if [[ $packageInstall -ne 0 && -n $port ]]; then
-		iptables -A INPUT -p tcp --dport $port -j ACCEPT;
-		echo "Open $port port";
-	fi
+ShowMemory() {
+	clear;
+	echo "Show memory";
+	echo;
+	echo -n "Total : ";
+	tmp=`top -n1 -b | grep "KiB Mem" | awk '{ print $3 }'`;
+	tmp=$(($tmp/1024));
+	echo "$tmp"M;
+
+	echo -n "Used  : ";
+	tmp=`top -n1 -b | grep "KiB Mem" | awk '{ print $5 }'`;
+	tmp=$(($tmp/1024));
+	echo "$tmp"M;
+
+	echo -n "Free  : ";
+	tmp=`top -n1 -b | grep "KiB Mem" | awk '{ print $7 }'`;
+	tmp=$(($tmp/1024));
+	echo "$tmp"M;
+
+	echo -n "Press any key...";
+	read;
+}
+
+ShowSwap() {
+	clear;
+	echo "Show swap";
+	echo;
+	echo -n "Total : ";
+	tmp=`top -n1 -b | grep "KiB Swap" | awk '{ print $3 }'`;
+	tmp=$(($tmp/1024));
+	echo "$tmp"M;
+
+	echo -n "Used  : ";
+	tmp=`top -n1 -b | grep "KiB Swap" | awk '{ print $5 }'`;
+	tmp=$(($tmp/1024));
+	echo "$tmp"M;
+
+	echo -n "Free  : ";
+	tmp=`top -n1 -b | grep "KiB Swap" | awk '{ print $7 }'`;
+	tmp=$(($tmp/1024));
+	echo "$tmp"M;
+
+	echo -n "Press any key...";
+	read;
+}
+
+isDone=0
+while [[ $isDone -ne 1 ]]; do
+	Menu
+	case "$?" in
+		1)
+			ShowMemory;
+			;;
+		2)
+			ShowSwap;
+			;;
+		3)
+
+			;;
+		5)
+			isDone=1
+			clear;
+			;;
+	esac
 done
 
-iptables -A INPUT -p tcp -j DROP;
-
-read;
-clear;
 exit 0
